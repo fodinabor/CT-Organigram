@@ -24,6 +24,7 @@ SOFTWARE.
 */
 require_once("cthelper.inc");
 include_once('session_mngmt.inc');
+include_once('config.inc');
 
 $active_domain = $_SESSION['user']['server'];
 ?>
@@ -72,6 +73,12 @@ $active_domain = $_SESSION['user']['server'];
 ?>
 </head>
 <body>
+<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
+	<label for="server">Vertical Level</label>
+	<input type="number" min="0" step="1" name="level" required>
+	<button type="submit">Set</button>
+</form>
+<br>
 <a id="#print" href="javascript:void(0);" rel="nofollow" onclick="print_window();" title="Print">Print</a>
 <a id="#logout" href="<?php echo $_SERVER['PHP_SELF'] . "?logoff=1"; ?>" >Logout</a>
 <?php
@@ -85,18 +92,18 @@ function exceptionHandler($ex){
 
 set_exception_handler('exceptionHandler');
 
-function printElement($element, $hierachy, $letzte = false){
+function printElement($element, $hierachy){
     if(!empty($element["name"])){
 		echo "<li " .
 		(empty($element["leader"]) ? "" : "data-leader='" . implode("<br>",$element["leader"]) . "' ") .
 		(empty($element["ma"])     ? "" : "data-ma='" . implode("<br>",$element["ma"]) . "'") .
 		">".$element["name"];
 	}
-    if($element["children"] !== null && !$letzte){
+    if($element["children"] !== null){
 		if(!empty($element["name"]))
 			echo "<ul>";
         foreach($element["children"] as $child){
-            printElement($hierachy[$child], $hierachy, $element['type'] === "7");
+            printElement($hierachy[$child], $hierachy);
         }
 		if(!empty($element["name"]))
 			echo "</ul>";
@@ -150,20 +157,11 @@ foreach($person_data as $p_id => $person) {
 			continue;
 		
 		$gms = $gtmss[$gm->groupmemberstatus_id];
-		if($gms->bezeichnung == "Leiter"){
+		if(in_array($gms->bezeichnung, $group_leader_role_names)){
 			$hierachy[$gm_id]['leader'][] = $person->vorname . " " . $person->name;
-		} else if($gms->bezeichnung == "Mitarbeiter"){
+		} else if(in_array($gms->bezeichnung, $group_members_role_names)){
 			$hierachy[$gm_id]['ma'][] = $person->vorname . " " . $person->name;
-		} else if($gms->bezeichnung == "Ansprechpartner GL"){
-			$hierachy[$gm_id]['leader'][] = $person->vorname . " " . $person->name;
-		} else if($gms->bezeichnung == "Arbeitskreisleiter"){
-			$hierachy[$gm_id]['leader'][] = $person->vorname . " " . $person->name;
 		}
-		
-		// print_r($gms->group_id);
-		// echo "<br>";
-		// print_r($hierachy[$gm_id]);
-		// echo "<br>";echo "<br>";
 	}
 }
 
@@ -171,7 +169,7 @@ echo "<div id='graphs'>";
 foreach($hierachy as $id => $data){
     if($data["parents"] === null){
         echo "<div id='chart-container{$id}' class='chbox'><ul id='hierachy{$id}' hidden>";
-        printElement($data, $hierachy, $data['type'] === "7");
+        printElement($data, $hierachy);
         echo "</ul>
         <script type='text/javascript'>
          $(function() {
@@ -193,8 +191,3 @@ echo "</div>";
 
 </body>
 </html>
-
-
-<?php
-// echo json_encode($hierachy);
-

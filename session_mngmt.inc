@@ -121,12 +121,50 @@ function build_login_form(){
 	<html lang="en">
 	<head>
 		<title>CT Hierachie Visualisierung</title>
+		<style type="text/css">
+			/* Full-width inputs */
+			input[type=text], input[type=password] {
+				width: 100%;
+				padding: 12px 20px;
+				margin: 8px 0;
+				display: inline-block;
+				border: 1px solid #ccc;
+				box-sizing: border-box;
+			}
+
+			/* Set a style for all buttons */
+			button {
+				background-color: #4CAF50;
+				color: white;
+				padding: 14px 20px;
+				margin: 8px 0;
+				border: none;
+				cursor: pointer;
+				width: 100%;
+			}
+
+			/* Add a hover effect for buttons */
+			button:hover {
+				opacity: 0.8;
+			}
+			
+			.loginByToken {
+				max-width: 400px;
+				float: left;
+			}
+			
+			.loginByCreds {
+				max-width: 400px;
+				float: right;
+			}
+		</style>
 	</head>
 	<body>
 		<h3>Please enter id &amp; token or E-Mail &amp; password:</h3>
 		<p>If using 2FA you have to generate a token in CT and use the token login.</p>
 		<div class="loginByToken">
 		<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
+			
 			<label for="server"><b>CT Address</b></label>
 			<input type="text" placeholder="Enter adress" name="server" required>
 			
