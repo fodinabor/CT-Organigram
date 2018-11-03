@@ -61,11 +61,11 @@ if(!$logged_in)
 	build_login_form();
 
 function encrypt_pw($pw){	
-	if(!file_exists('.seesion_key')){
+	if(!file_exists('.session_key')){
 		file_put_contents('.session_key', base64_encode(openssl_random_pseudo_bytes(2048)));
 	}
 
-	$key = base64_decode(file_get_contents('.seesion_key'));
+	$key = base64_decode(file_get_contents('.session_key'));
 	
 	$cipher = "aes-256-cbc";
 	if (in_array($cipher, openssl_get_cipher_methods()))
@@ -80,11 +80,11 @@ function encrypt_pw($pw){
 }
 
 function decrypt_pw($pw){	
-	if(!file_exists('.seesion_key')){
+	if(!file_exists('.session_key')){
 		file_put_contents('.session_key', base64_encode(openssl_random_pseudo_bytes(2048)));
 	}
 
-	$key = base64_decode(file_get_contents('.seesion_key'));
+	$key = base64_decode(file_get_contents('.session_key'));
 	
 	$cipher = "aes-256-cbc";
 	if (in_array($cipher, openssl_get_cipher_methods()))
