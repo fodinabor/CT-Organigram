@@ -27,6 +27,8 @@ include_once('session_mngmt.inc');
 include_once('config.inc');
 
 $active_domain = $_SESSION['user']['server'];
+
+$level = intval(isset($_GET['level'])? $_GET['level'] : 3);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -75,7 +77,7 @@ $active_domain = $_SESSION['user']['server'];
 <body>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
 	<label for="server">Vertical Level</label>
-	<input type="number" min="0" step="1" name="level" required>
+	<input type="number" min="0" step="1" name="level" value="<?php echo $level; ?>" required>
 	<button type="submit">Set</button>
 </form>
 <br>
@@ -129,7 +131,6 @@ CT_logout($active_domain);
 $person_data = $person_data->data;
 $masterData = $masterData->data;
 $groups = $masterData->churchauth->group;
-$level = intval(isset($_GET['level'])? $_GET['level'] : 3);
 
 $gtmss = get_object_vars($masterData->churchauth->grouptypeMemberstatus);
 $gmss = get_object_vars($masterData->churchauth->groupMemberstatus);

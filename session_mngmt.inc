@@ -37,12 +37,14 @@ if(isset($_POST['server'])){
 	
 	if(isset($_POST['id']) && is_numeric($_POST['id']) && isset($_POST['token'])){
 		if(CT_login($_POST['server'], $_POST['token'], $_POST['id'])){
-			$_SESSION['user'] = array('token' => $_POST['token'], 'id' => encrypt_pw($_POST['id']), 'server' => $_POST['server']);
+			setcookie('token', encrypt_pw($_POST['token']));
+			$_SESSION['user'] = array('id' => $_POST['id'], 'server' => $_POST['server']);
 			$logged_in = true;
 		}
 	} else if(isset($_POST['email']) && isset($_POST['pw'])){
 		if(CT_loginAuth($_POST['server'], $_POST['email'], $_POST['pw'])){
-			$_SESSION['user'] = array('email' => $_POST['email'], 'pw' => encrypt_pw($_POST['pw']), 'server' => $_POST['server']);
+			setcookie('key', encrypt_pw($_POST['pw']));
+			$_SESSION['user'] = array('email' => $_POST['email'], 'server' => $_POST['server']);
 			$logged_in = true;
 		}
 	}
@@ -51,8 +53,8 @@ if(isset($_POST['server'])){
 if(isset($_SESSION['user'])){
 	$user = $_SESSION['user'];
 	if(!$logged_in){
-		if(isset($user['token']) && CT_login($user['server'], $user['token'], decrypt_pw($user['id'])) 
-			|| isset($user['email']) && CT_loginAuth($user['server'], $user['email'], decrypt_pw($user['pw'])))
+		if(isset($user['id']) && CT_login($user['server'], decrypt_pw($_COOKIE['token']), $user['id']) 
+			|| isset($user['email']) && CT_loginAuth($user['server'], $user['email'], decrypt_pw($_COOKIE['key'])))
 			$logged_in = true;
 	}
 }
@@ -113,6 +115,8 @@ function normalize_server($server){
 function logoff(){
 	session_destroy();
 	$_SESSION = array();
+	setcookie("token", "", time() - 3600);
+	setcookie("key", "", time() - 3600);
 }
 
 function build_login_form(){
@@ -160,8 +164,10 @@ function build_login_form(){
 		</style>
 	</head>
 	<body>
-		<h3>Please enter id &amp; token or E-Mail &amp; password:</h3>
+		<h3>Please enter your user id &amp; token or E-Mail &amp; password:</h3>
 		<p>If using 2FA you have to generate a token in CT and use the token login.</p>
+		<p><i>Bitte gib entweder deine ChurchTools Benutzer ID und dein Login Token ein oder deine E-Mail Adresse und dein Passwort.<br>
+		Wenn 2-Faktor Authentifizierung für deinen Account aktiviert ist, funktioniert nur ID &amp; Token login.</i></p>
 		<div class="loginByToken">
 		<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
 			
@@ -191,6 +197,33 @@ function build_login_form(){
 
 			<button type="submit">Login (E-Mail &amp; PW)</button>
 		</form>
+		</div>
+		<div style="float: left; padding-top: 10px;">
+		<p>How to get token / id:<br>
+		<i>Wie komme ich an Token / ID:</i><br>
+		Select a person (usually you) in ChurchDB, then you'll find the id in the lower right corner. The link to aquire the login token is hidden in the Permissions. Possibly you need to ask your admin to give you the token. <b>You should be careful with the token as it is equivalent to your password!</b><br>
+		<i>Wähle eine Person (normalerweise dich) in ChurchDB. Dann findest du rechts unten die ID. Der Link, um den Login Token zu erhalten, ist unter Berechtigungen versteckt. Ggf. beim Admin das Token anfragen. <b>Bitte sorgfältig mit dem Token umgehen, da er äquivalent zu deinem Passwort ist!</b></i><br>
+		<img src="res/how-to-id.PNG" /><br><img src="res/how-to-berechtigungen.PNG" /><br><img src="res/how-to-token.PNG" />
+		</p>
+		<p><i>Privacy / Security:<br>
+		No data is permanently stored on the server, though your ip address is logged to prevent abuse.
+		The information you provide for login is not stored on my server and only used to login to your ChurchTools instance. For convenience the email or the id and the server address are stored temporarily, so you don't have to login again and again.
+		Your password / token is never stored on my server, but is stored <b>on your computer in an encrpyted form</b> for the duration of your session as a cookie. It will be deleted as soon, as you logoff or close your browser.<br>
+		If you still have privacy concerns, you could just host this yourself. The code can be found on <a href="https://github.com/fodinabor/CT-Organigram">GitHub</a>.<br><br>
+		Keine der angegebenen Daten werden auf diesem Server permanent gespeichert. Nur die IP-Adresse mit der du gerade auf die Website zugreifst, um Missbrauch zu vermeiden.
+		Die Daten, die du angibst werden ausschließlich verwendet, um die Daten von deiner ChurchTools Instanz zu holen. Damit du nicht für jedes Mal Neuladen deine Daten neu angeben musst, werden die E-Mail Adresse bzw. die Nutzer ID und die Server Adresse zwischen gespeichert.
+		Dein Passwort / Token wird nie auf diesem Server gespeichert, aber dafür als Cookie <b>auf deinem Computer in verschlüsselter Form</b> für die Dauer deiner Sitzung. Das Cookie und die anderen Daten werden automatisch gelöscht, wenn du dich ausloggst oder den Browser schließt.<br>
+		Solltest du immer noch Datenschutz Bedenken haben, kannst du dieses Organigram auch gerne auf deinem eigenen Server laufen lassen. Der Code steht auf <a href="https://github.com/fodinabor/CT-Organigram">GitHub</a> zur Verfügung.
+		</i></p>
+		<p><i>Disclaimer:<br>
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+		SOFTWARE.
+		</i></p>
 		</div>
 	</body>
 	</html>
