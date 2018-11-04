@@ -28,7 +28,7 @@ include_once('config.inc');
 
 $active_domain = decrypt_pw($_SESSION['user']['server']);
 
-$level = intval(isset($_GET['level'])? $_GET['level'] : 3);
+$level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) ? $_POST['level'] : 3));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,10 +59,12 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : 3);
 </style>
 <script type="text/javascript">
 (print_window = function () {
-	var novoForm = window.open('', 'Print', 'status=no,toolbar=no,scrollbars=yes,titlebar=no,menubar=no,resizable=yes,width=600,height=600,directories=no,location=no');
-	novoForm.document.write($(document.documentElement).html());
-	novoForm.document.getElementById('#print').remove();
-	novoForm.document.getElementById('#logout').remove();
+	var printWindow = window.open('', 'Print', 'status=no,toolbar=no,scrollbars=yes,titlebar=no,menubar=no,resizable=yes,width=600,height=600,directories=no,location=no');
+	var doc = $(document.documentElement).clone();
+	doc.find('#print').remove();
+	doc.find('#logout').remove();
+	doc.find('#level_form').remove();
+	printWindow.document.write(doc.html());
 });
 </script>
 <!--script type="text/javascript" src="res/jquery.min.js"></script>-->
@@ -75,14 +77,15 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : 3);
 ?>
 </head>
 <body>
-<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
-	<label for="server">Vertical Level</label>
+<form id="level_form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
+	<label for="level">Vertical Level</label>
 	<input type="number" min="0" step="1" name="level" value="<?php echo $level; ?>" required>
+	<input type="hidden" name="csrf" value="<?php echo $_SESSION['csrf']; ?>" required>
 	<button type="submit">Set</button>
 </form>
 <br>
-<a id="#print" href="javascript:void(0);" rel="nofollow" onclick="print_window();" title="Print">Print</a>
-<a id="#logout" href="<?php echo $_SERVER['PHP_SELF'] . "?logoff=1"; ?>" >Logout</a>
+<a id="print" href="javascript:void(0);" rel="nofollow" onclick="print_window();" title="Print">Print</a>
+<a id="logout" href="<?php echo $_SERVER['PHP_SELF'] . "?csrf=" . $_SESSION['csrf'] . "&logoff=1"; ?>" >Logout</a>
 <?php
 
 function exceptionHandler($ex){

@@ -28,21 +28,29 @@ session_start();
 
 $logged_in = false;
 
+if(isset($_SESSION['csrf']) 
+	&& !((isset($_POST['csrf']) && hash_equals($_SESSION['csrf'], $_POST['csrf'])) 
+	|| (isset($_GET['csrf']) && hash_equals($_SESSION['csrf'], $_POST['csrf'])))) // CSRF protection
+	die("CSRF detected!");
+
 if(isset($_GET['logoff'])){
 	logoff();
 }
 
 if(isset($_POST['server'])){
+	setcookie("key", "", time() - 3600); // clear cookie to make sure, that we get a clean key (prevent manipulated keys)
+	
 	$_POST['server'] = normalize_server($_POST['server']);
 	
 	if(isset($_POST['id']) && is_numeric($_POST['id']) && isset($_POST['token'])){
 		if(CT_login($_POST['server'], $_POST['token'], $_POST['id'])){
-			decrypt_pw(encrypt_pw($_POST['id']));
+			$_SESSION['csrf'] = bin2hex(random_bytes(32));
 			$_SESSION['user'] = array('id' => encrypt_pw($_POST['id']), 'token' => encrypt_pw($_POST['token']), 'server' => encrypt_pw($_POST['server']));
 			$logged_in = true;
 		}
 	} else if(isset($_POST['email']) && isset($_POST['pw'])){
 		if(CT_loginAuth($_POST['server'], $_POST['email'], $_POST['pw'])){
+			$_SESSION['csrf'] = bin2hex(random_bytes(32));
 			$_SESSION['user'] = array('email' => encrypt_pw($_POST['email']), 'pw' => encrypt_pw($_POST['pw']), 'server' => encrypt_pw($_POST['server']));
 			$logged_in = true;
 		}
@@ -124,8 +132,10 @@ function logoff(){
 }
 
 function getEncryptionKey() {
-	if(!isset($_COOKIE['key']))
-		setcookie('key', base64_encode(openssl_random_pseudo_bytes(32)));
+	if(!$_SERVER['HTTPS'])
+		die("Only HTTPS supported");
+	if(!isset($_COOKIE['key']) || empty($_COOKIE['key']))
+		setcookie('key', base64_encode(openssl_random_pseudo_bytes(32)), 0, "", $_SERVER['SERVER_NAME'], true, true);
 	return base64_decode($_COOKIE['key']);
 }
 
