@@ -26,7 +26,7 @@ require_once("cthelper.inc");
 include_once('session_mngmt.inc');
 include_once('config.inc');
 
-$active_domain = $_SESSION['user']['server'];
+$active_domain = decrypt_pw($_SESSION['user']['server']);
 
 $level = intval(isset($_GET['level'])? $_GET['level'] : 3);
 ?>

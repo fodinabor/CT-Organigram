@@ -37,14 +37,13 @@ if(isset($_POST['server'])){
 	
 	if(isset($_POST['id']) && is_numeric($_POST['id']) && isset($_POST['token'])){
 		if(CT_login($_POST['server'], $_POST['token'], $_POST['id'])){
-			setcookie('token', encrypt_pw($_POST['token']));
-			$_SESSION['user'] = array('id' => $_POST['id'], 'server' => $_POST['server']);
+			decrypt_pw(encrypt_pw($_POST['id']));
+			$_SESSION['user'] = array('id' => encrypt_pw($_POST['id']), 'token' => encrypt_pw($_POST['token']), 'server' => encrypt_pw($_POST['server']));
 			$logged_in = true;
 		}
 	} else if(isset($_POST['email']) && isset($_POST['pw'])){
 		if(CT_loginAuth($_POST['server'], $_POST['email'], $_POST['pw'])){
-			setcookie('key', encrypt_pw($_POST['pw']));
-			$_SESSION['user'] = array('email' => $_POST['email'], 'server' => $_POST['server']);
+			$_SESSION['user'] = array('email' => encrypt_pw($_POST['email']), 'pw' => encrypt_pw($_POST['pw']), 'server' => encrypt_pw($_POST['server']));
 			$logged_in = true;
 		}
 	}
@@ -53,8 +52,8 @@ if(isset($_POST['server'])){
 if(isset($_SESSION['user'])){
 	$user = $_SESSION['user'];
 	if(!$logged_in){
-		if(isset($user['id']) && CT_login($user['server'], decrypt_pw($_COOKIE['token']), $user['id']) 
-			|| isset($user['email']) && CT_loginAuth($user['server'], $user['email'], decrypt_pw($_COOKIE['key'])))
+		if(isset($user['id']) && CT_login(decrypt_pw($user['server']), decrypt_pw($user['token']), decrypt_pw($user['id']))
+			|| isset($user['email']) && CT_loginAuth(decrypt_pw($user['server']), decrypt_pw($user['email']), decrypt_pw($user['pw'])))
 			$logged_in = true;
 	}
 }
@@ -62,38 +61,44 @@ if(isset($_SESSION['user'])){
 if(!$logged_in)
 	build_login_form();
 
-function encrypt_pw($pw){	
-	if(!file_exists('.session_key')){
-		file_put_contents('.session_key', base64_encode(openssl_random_pseudo_bytes(2048)));
-	}
-
-	$key = base64_decode(file_get_contents('.session_key'));
+function encrypt_pw($pw){
+	$key = getEncryptionKey();
 	
 	$cipher = "aes-256-cbc";
 	if (in_array($cipher, openssl_get_cipher_methods()))
 	{
 		$ivlen = openssl_cipher_iv_length($cipher);
 		$iv = openssl_random_pseudo_bytes($ivlen);
-		$ciphertext = openssl_encrypt($pw, $cipher, $key, $options=0, $iv);
-		$ciphertext .= ":" . $iv;
-		return base64_encode($ciphertext);
+		$ciphertext_raw = openssl_encrypt($pw, $cipher, $key, $options=OPENSSL_RAW_DATA, $iv);
+		$hmac = hash_hmac('sha256', $ciphertext_raw, $key, $as_binary=true);
+		$ciphertext = base64_encode( $iv.$hmac.$ciphertext_raw );
+		return $ciphertext;
 	}
+	logoff();
 	die("Server not supported - missing cipher");
 }
 
-function decrypt_pw($pw){	
-	if(!file_exists('.session_key')){
-		file_put_contents('.session_key', base64_encode(openssl_random_pseudo_bytes(2048)));
-	}
-
-	$key = base64_decode(file_get_contents('.session_key'));
+function decrypt_pw($pw){
+	$key = getEncryptionKey();
 	
 	$cipher = "aes-256-cbc";
 	if (in_array($cipher, openssl_get_cipher_methods()))
 	{
-		$pw_expl = explode(':', base64_decode($pw));
-		return openssl_decrypt($pw_expl[0], $cipher, $key, $options=0, $pw_expl[1]);
+		$c = base64_decode($pw);
+		$ivlen = openssl_cipher_iv_length($cipher);
+		$iv = substr($c, 0, $ivlen);
+		$hmac = substr($c, $ivlen, $shalen=32);
+		$ciphertext_raw = substr($c, $ivlen+$shalen);
+		$plaintext = openssl_decrypt($ciphertext_raw, $cipher, $key, $options=OPENSSL_RAW_DATA, $iv);
+		$calcmac = hash_hmac('sha256', $ciphertext_raw, $key, $as_binary=true);
+		if (hash_equals($hmac, $calcmac))
+		{
+			return $plaintext;
+		}
+		logoff();
+		die("Encrypted data changed. Not using it.");
 	}
+	logoff();
 	die("Server not supported - missing cipher");
 }
 
@@ -113,10 +118,15 @@ function normalize_server($server){
 }
 
 function logoff(){
+	session_unset();
 	session_destroy();
-	$_SESSION = array();
-	setcookie("token", "", time() - 3600);
 	setcookie("key", "", time() - 3600);
+}
+
+function getEncryptionKey() {
+	if(!isset($_COOKIE['key']))
+		setcookie('key', base64_encode(openssl_random_pseudo_bytes(32)));
+	return base64_decode($_COOKIE['key']);
 }
 
 function build_login_form(){
@@ -206,13 +216,13 @@ function build_login_form(){
 		<img src="res/how-to-id.PNG" /><br><img src="res/how-to-berechtigungen.PNG" /><br><img src="res/how-to-token.PNG" />
 		</p>
 		<p><i>Privacy / Security:<br>
-		No data is permanently stored on the server, though your ip address is logged to prevent abuse.
-		The information you provide for login is not stored on my server and only used to login to your ChurchTools instance. For convenience the email or the id and the server address are stored temporarily, so you don't have to login again and again.
-		Your password / token is never stored on my server, but is stored <b>on your computer in an encrpyted form</b> for the duration of your session as a cookie. It will be deleted as soon, as you logoff or close your browser.<br>
+		No data is permanently stored on the server, though your ip address is logged to prevent abuse (logs are deleted regularily of course).
+		The information you provide for login is not stored permanently on my server and only used to login to your ChurchTools instance. For convenience the email or the id, password or the token and the server address are <b>stored temporarily in encrpyted form</b>, so you don't have to login again and again.
+		The information to decrypt this data is never stored on my server, but is stored <b>on your computer</b> for the duration of your session as a cookie. It will be deleted as soon, as you logoff or close your browser.<br>
 		If you still have privacy concerns, you could just host this yourself. The code can be found on <a href="https://github.com/fodinabor/CT-Organigram">GitHub</a>.<br><br>
-		Keine der angegebenen Daten werden auf diesem Server permanent gespeichert. Nur die IP-Adresse mit der du gerade auf die Website zugreifst, um Missbrauch zu vermeiden.
-		Die Daten, die du angibst werden ausschließlich verwendet, um die Daten von deiner ChurchTools Instanz zu holen. Damit du nicht für jedes Mal Neuladen deine Daten neu angeben musst, werden die E-Mail Adresse bzw. die Nutzer ID und die Server Adresse zwischen gespeichert.
-		Dein Passwort / Token wird nie auf diesem Server gespeichert, aber dafür als Cookie <b>auf deinem Computer in verschlüsselter Form</b> für die Dauer deiner Sitzung. Das Cookie und die anderen Daten werden automatisch gelöscht, wenn du dich ausloggst oder den Browser schließt.<br>
+		Keine der angegebenen Daten werden auf diesem Server permanent gespeichert. Nur die IP-Adresse mit der du gerade auf die Website zugreifst, um Missbrauch zu vermeiden (Logs werden natürlich regelmäßig gelöscht).
+		Die Daten, die du angibst werden ausschließlich verwendet, um die Daten von deiner ChurchTools Instanz zu holen. Damit du nicht für jedes Mal Neuladen deine Daten neu angeben musst, werden die E-Mail Adresse bzw. die Nutzer ID, dein Passwort bzw. dein Token und die Server Adresse <b>in verschlüsselter Form temporär</b> zwischen gespeichert.
+		Die nötigen Informationen, um deine Daten zu entschlüsseln werden nie auf diesem Server gespeichert, aber dafür als Cookie <b>auf deinem Computer</b> für die Dauer deiner Sitzung abgelegt. Das Cookie und die anderen Daten werden automatisch gelöscht, wenn du dich ausloggst oder den Browser schließt.<br>
 		Solltest du immer noch Datenschutz Bedenken haben, kannst du dieses Organigram auch gerne auf deinem eigenen Server laufen lassen. Der Code steht auf <a href="https://github.com/fodinabor/CT-Organigram">GitHub</a> zur Verfügung.
 		</i></p>
 		<p><i>Disclaimer:<br>
