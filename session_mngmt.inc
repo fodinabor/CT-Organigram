@@ -30,7 +30,7 @@ $logged_in = false;
 
 if(isset($_SESSION['csrf']) 
 	&& !((isset($_POST['csrf']) && hash_equals($_SESSION['csrf'], $_POST['csrf'])) 
-	|| (isset($_GET['csrf']) && hash_equals($_SESSION['csrf'], $_POST['csrf'])))) // CSRF protection
+	|| (isset($_GET['csrf']) && hash_equals($_SESSION['csrf'], $_GET['csrf'])))) // CSRF protection
 	die("CSRF detected!");
 
 if(isset($_GET['logoff'])){
