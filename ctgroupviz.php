@@ -33,6 +33,7 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+	<title>CT Hierachie Visualisierung</title>
 <?php
 	echo '<link rel="stylesheet" href="res/jquery.orgchart.css?' . time() .'">';
 ?>

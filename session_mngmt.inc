@@ -28,10 +28,10 @@ session_start();
 
 $logged_in = false;
 
-if(isset($_SESSION['csrf']) 
+if(isset($_SESSION['csrf'])
 	&& !((isset($_POST['csrf']) && hash_equals($_SESSION['csrf'], $_POST['csrf'])) 
 	|| (isset($_GET['csrf']) && hash_equals($_SESSION['csrf'], $_GET['csrf'])))) // CSRF protection
-	die("CSRF detected!");
+	logoff();
 
 if(isset($_GET['logoff'])){
 	logoff();
@@ -226,10 +226,12 @@ function build_login_form(){
 		<img src="res/how-to-id.PNG" /><br><img src="res/how-to-berechtigungen.PNG" /><br><img src="res/how-to-token.PNG" />
 		</p>
 		<p><i>Privacy / Security:<br>
+		JavaScript has to be activated for the website to work.
 		No data is permanently stored on the server, though your ip address is logged to prevent abuse (logs are deleted regularily of course).
 		The information you provide for login is not stored permanently on my server and only used to login to your ChurchTools instance. For convenience the email or the id, password or the token and the server address are <b>stored temporarily in encrpyted form</b>, so you don't have to login again and again.
 		The information to decrypt this data is never stored on my server, but is stored <b>on your computer</b> for the duration of your session as a cookie. It will be deleted as soon, as you logoff or close your browser.<br>
 		If you still have privacy concerns, you could just host this yourself. The code can be found on <a href="https://github.com/fodinabor/CT-Organigram">GitHub</a>.<br><br>
+		JavaScript muss aktiviert sein.
 		Keine der angegebenen Daten werden auf diesem Server permanent gespeichert. Nur die IP-Adresse mit der du gerade auf die Website zugreifst, um Missbrauch zu vermeiden (Logs werden natürlich regelmäßig gelöscht).
 		Die Daten, die du angibst werden ausschließlich verwendet, um die Daten von deiner ChurchTools Instanz zu holen. Damit du nicht für jedes Mal Neuladen deine Daten neu angeben musst, werden die E-Mail Adresse bzw. die Nutzer ID, dein Passwort bzw. dein Token und die Server Adresse <b>in verschlüsselter Form temporär</b> zwischen gespeichert.
 		Die nötigen Informationen, um deine Daten zu entschlüsseln werden nie auf diesem Server gespeichert, aber dafür als Cookie <b>auf deinem Computer</b> für die Dauer deiner Sitzung abgelegt. Das Cookie und die anderen Daten werden automatisch gelöscht, wenn du dich ausloggst oder den Browser schließt.<br>
