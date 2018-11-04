@@ -108,7 +108,7 @@ function CT_loginAuth($domain, $email, $pw){
 	// Now use creds to login 
 	$data = array('func' => 'login', 
 				  'email' => $email,
-				  'pw' => $pw,
+				  'password' => $pw,
 				  'directtool' => 'GroupViz'
 			);
 	$result = CT_sendRequest($domain, $url, $data);
