@@ -57,6 +57,13 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
     .chbox {
         display: inline-flex;
     }
+	.error {
+		background-color: #d30303;
+		color: white;
+		padding: 14px 20px;
+		margin: 8px 0;
+		border: none;
+	}
 </style>
 <script type="text/javascript">
 (print_window = function () {
@@ -96,6 +103,11 @@ function exceptionHandler($ex){
 		CT_logout($active_domain);
 }
 
+function showErrorAndExit($err){
+	echo "<div class='error'><p>" . $err ."</p></div>";
+	exit();
+}
+
 set_exception_handler('exceptionHandler');
 
 function printElement($element, $hierachy){
@@ -121,13 +133,13 @@ function printElement($element, $hierachy){
 $masterData = CT_getCTAuthMasterData($active_domain);
 if($masterData->status != "success"){
     CT_logout($active_domain);
-    die("Error fetching data");
+    showErrorAndExit("Error fetching data");
 }
 
 $person_data = CT_getAllPersonData($active_domain);
 if($person_data->status != "success"){
     CT_logout($active_domain);
-    die("Error fetching person data");
+    showErrorAndExit("Error fetching person data");
 }
 
 CT_logout($active_domain);

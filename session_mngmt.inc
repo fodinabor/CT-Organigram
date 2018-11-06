@@ -27,11 +27,14 @@ SOFTWARE.
 session_start();
 
 $logged_in = false;
+$error_message = "";
 
 if(isset($_SESSION['csrf'])
 	&& !((isset($_POST['csrf']) && hash_equals($_SESSION['csrf'], $_POST['csrf'])) 
-	|| (isset($_GET['csrf']) && hash_equals($_SESSION['csrf'], $_GET['csrf'])))) // CSRF protection
+	|| (isset($_GET['csrf']) && hash_equals($_SESSION['csrf'], $_GET['csrf'])))){ // CSRF protection
+	$error_message = "Session couldn't be validated - logoff. Session konnte nicht validiert werden - ausgeloggt.";
 	logoff();
+}
 
 if(isset($_GET['logoff'])){
 	logoff();
@@ -47,13 +50,15 @@ if(isset($_POST['server'])){
 			$_SESSION['csrf'] = bin2hex(random_bytes(32));
 			$_SESSION['user'] = array('id' => encrypt_pw($_POST['id']), 'token' => encrypt_pw($_POST['token']), 'server' => encrypt_pw($_POST['server']));
 			$logged_in = true;
-		}
+		} else 
+			$error_message = "Could not login using token & id. Anmeldung mit Token und ID nicht erfolgreich.";
 	} else if(isset($_POST['email']) && isset($_POST['pw'])){
 		if(CT_loginAuth($_POST['server'], $_POST['email'], $_POST['pw'])){
 			$_SESSION['csrf'] = bin2hex(random_bytes(32));
 			$_SESSION['user'] = array('email' => encrypt_pw($_POST['email']), 'pw' => encrypt_pw($_POST['pw']), 'server' => encrypt_pw($_POST['server']));
 			$logged_in = true;
-		}
+		} else 
+			$error_message = "Could not login using email & password. Anmeldung mit E-Mail und Passwort nicht erfolgreich.";
 	}
 }
 
@@ -63,6 +68,8 @@ if(isset($_SESSION['user'])){
 		if(isset($user['id']) && CT_login(decrypt_pw($user['server']), decrypt_pw($user['token']), decrypt_pw($user['id']))
 			|| isset($user['email']) && CT_loginAuth(decrypt_pw($user['server']), decrypt_pw($user['email']), decrypt_pw($user['pw'])))
 			$logged_in = true;
+		else
+			$error_message = "Could not login using cached information. Anmeldung zwischengespeicherten informationen nicht erfolgreich.";
 	}
 }
 
@@ -140,6 +147,7 @@ function getEncryptionKey() {
 }
 
 function build_login_form(){
+	global $error_message;
 	?>
 	<!DOCTYPE html>
 	<html lang="en">
@@ -181,9 +189,22 @@ function build_login_form(){
 				max-width: 400px;
 				float: right;
 			}
+
+			.error {
+				background-color: #d30303;
+				color: white;
+				padding: 14px 20px;
+				margin: 8px 0;
+				border: none;
+			}
 		</style>
 	</head>
 	<body>
+		<?php
+			if(!empty($error_message)){
+				echo "<div class='error'><p>" . $error_message ."</p></div>";
+			}
+		?>
 		<h3>Please enter your user id &amp; token or E-Mail &amp; password:</h3>
 		<p>If using 2FA you have to generate a token in CT and use the token login.</p>
 		<p><i>Bitte gib entweder deine ChurchTools Benutzer ID und dein Login Token ein oder deine E-Mail Adresse und dein Passwort.<br>
