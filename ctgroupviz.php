@@ -152,7 +152,7 @@ $gtmss = get_object_vars($masterData->churchauth->grouptypeMemberstatus);
 $gmss = get_object_vars($masterData->churchauth->groupMemberstatus);
 
 $groupTypes = array();
-foreach($grouptype as $id => $data){
+foreach($masterData->churchauth->grouptype as $id => $data){
 	$groupTypes[$id] = $data->bezeichnung;
 }
 
