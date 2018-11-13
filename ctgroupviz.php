@@ -26,6 +26,8 @@ require_once("cthelper.inc");
 include_once('session_mngmt.inc');
 include_once('config.inc');
 
+$asset_cache_time = date("mdH");
+
 $active_domain = decrypt_pw($_SESSION['user']['server']);
 
 $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) ? $_POST['level'] : 3));
@@ -35,7 +37,7 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
 <head>
 	<title>CT Hierachie Visualisierung</title>
 <?php
-	echo '<link rel="stylesheet" href="res/jquery.orgchart.css?' . time() .'">';
+	echo '<link rel="stylesheet" href="res/jquery.orgchart.css?' . $asset_cache_time .'">';
 ?>
 <style>
     .orgchart {
@@ -81,7 +83,7 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
   crossorigin="anonymous"></script>
 <?php
-	echo '<script type="text/javascript" src="res/jquery.orgchart.js?t'.time().'"></script>';
+	echo '<script type="text/javascript" src="res/jquery.orgchart.js?t'.$asset_cache_time.'"></script>';
 ?>
 </head>
 <body>
