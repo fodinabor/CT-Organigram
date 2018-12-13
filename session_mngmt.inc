@@ -219,7 +219,7 @@ function build_login_form(){
 			<input type="text" placeholder="Enter id" name="id" required>
 
 			<label for="token"><b>Token</b></label>
-			<input type="text" placeholder="Copy token" name="token" required>
+			<input type="password" placeholder="Copy token" name="token" required />
 
 			<button type="submit">Login</button>
 		</form>
