@@ -41,7 +41,10 @@ if(isset($_GET['logoff'])){
 }
 
 if(isset($_POST['server'])){
-	setcookie("key", "", time() - 3600); // clear cookie to make sure, that we get a clean key (prevent manipulated keys)
+    if(isset($_COOKIE['key'])){
+        setcookie('key', $_COOKIE['key'], time() - 3600, "", $_SERVER['SERVER_NAME'], true, true); // clear cookie to make sure, that we get a clean key (prevent manipulated keys)
+        unset($_COOKIE['key']);
+    }
 	
 	$_POST['server'] = normalize_server($_POST['server']);
 	
@@ -135,14 +138,23 @@ function normalize_server($server){
 function logoff(){
 	session_unset();
 	session_destroy();
-	setcookie("key", "", time() - 3600);
+    if(isset($_COOKIE['key'])){
+        setcookie('key', $_COOKIE['key'], time() - 3600, "", $_SERVER['SERVER_NAME'], true, true);
+        unset($_COOKIE['key']);
+    }
+    if (isset($_COOKIE[session_name()])){
+        setcookie(session_name(), $_COOKIE[session_name()], time()-3600, "/");
+        unset($_COOKIE[session_name()]);
+    }
 }
 
 function getEncryptionKey() {
 	if(!$_SERVER['HTTPS'])
 		die("Only HTTPS supported");
-	if(!isset($_COOKIE['key']) || empty($_COOKIE['key']))
-		setcookie('key', base64_encode(openssl_random_pseudo_bytes(32)), 0, "", $_SERVER['SERVER_NAME'], true, true);
+	if(!isset($_COOKIE['key']) || empty($_COOKIE['key'])){
+        $_COOKIE['key'] = base64_encode(openssl_random_pseudo_bytes(32));
+		setcookie('key', $_COOKIE['key'], 0, "", $_SERVER['SERVER_NAME'], true, true);
+    }
 	return base64_decode($_COOKIE['key']);
 }
 
