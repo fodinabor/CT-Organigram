@@ -132,7 +132,7 @@ function printElement($element, $hierachy){
 		echo "</li>";
 }
 
-$masterData = CT_getCTAuthMasterData($active_domain);
+$masterData = CT_getCTDbMasterData($active_domain);
 if($masterData->status != "success"){
     CT_logout($active_domain);
     showErrorAndExit("Error fetching data");
@@ -148,13 +148,13 @@ CT_logout($active_domain);
 
 $person_data = $person_data->data;
 $masterData = $masterData->data;
-$groups = $masterData->churchauth->group;
+$groups = $masterData->groups;
 
-$gtmss = get_object_vars($masterData->churchauth->grouptypeMemberstatus);
-$gmss = get_object_vars($masterData->churchauth->groupMemberstatus);
+$gtmss = get_object_vars($masterData->grouptypeMemberstatus);
+$gmss = get_object_vars($masterData->groupMemberstatus);
 
 $groupTypes = array();
-foreach($masterData->churchauth->grouptype as $id => $data){
+foreach($masterData->grouptypes as $id => $data){
 	$groupTypes[$id] = $data->bezeichnung;
 }
 
