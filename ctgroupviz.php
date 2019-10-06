@@ -54,7 +54,12 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
             border-width: 1px;
             color: #00039a;
             -webkit-print-color-adjust: exact;
-        }
+		}
+		
+		.orgchart .inactive .title {
+			background-color: #FFF;
+			color: #00020a;
+		}
     }
     .chbox {
         display: inline-flex;
@@ -65,6 +70,28 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
 		padding: 14px 20px;
 		margin: 8px 0;
 		border: none;
+	}
+	.orgchart .inactive .title {
+		background-color: #ccc;
+        color: #777;
+	}
+	.orgchart .inactive .content {
+		background-color: #d2e4d2;
+        color: #777;
+	}
+	.orgchart .inactive .content2 {
+        color: #777;
+	}
+	.orgchart .other .title {
+		background-color: #bbb;
+        color: #00039a;
+	}
+	.orgchart .other .content {
+		background-color: #d2e4d2;
+        color: #777;
+	}
+	.orgchart .other .content2 {
+        color: #777;
 	}
 </style>
 <script type="text/javascript">
@@ -117,6 +144,7 @@ function printElement($element, $hierachy){
 		echo "<li " .
 		(empty($element["leader"]) ? "" : "data-leader='" . implode("<br>",$element["leader"]) . "' ") .
 		(empty($element["ma"])     ? "" : "data-ma='" . implode("<br>",$element["ma"]) . "'") .
+		("data-class='" . ($element["status"] === "1" ? "active" : ($element["status"] === "3" ? "inactive" : "other")) . "'") .
 		">".$element["name"];
 	}
     if($element["children"] !== null){
@@ -162,9 +190,9 @@ $hierachy = array();
 
 foreach($groups as $id => $data){	
 	if($data->versteckt_yn === "0"/* && $data->groupstatus_id === "1"*/){
-		$hierachy[$id] = array("name" => $data->bezeichnung, "type" => $groupTypes[$data->gruppentyp_id], "leader" => array(), "ma" => array(), "children" => $data->childs, "parents" => $data->parents);
+		$hierachy[$id] = array("name" => $data->bezeichnung, "type" => $groupTypes[$data->gruppentyp_id], "leader" => array(), "ma" => array(), "children" => $data->childs, "parents" => $data->parents, "status" => $data->groupstatus_id);
 	} else {
-		$hierachy[$id] = array("name" => "", "type" => $groupTypes[$data->gruppentyp_id], "leader" => array(), "ma" => array(), "children" => $data->childs, "parents" => $data->parents);
+		$hierachy[$id] = array("name" => "", "type" => $groupTypes[$data->gruppentyp_id], "leader" => array(), "ma" => array(), "children" => $data->childs, "parents" => $data->parents, "status" => $data->groupstatus_id);
 	}
 }
 
@@ -196,7 +224,10 @@ foreach($hierachy as $id => $data){
             'data' : $('#hierachy{$id}'),
             'verticalLevel': {$level},
 			'nodeContent': 'leader',
-			'nodeContentSecond': 'ma'
+			'nodeContentSecond': 'ma',
+			'createNode': function (node, data) {
+				node.addClass(data.class);
+				}
           });
          });
         </script>
