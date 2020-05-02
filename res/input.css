@@ -1,0 +1,76 @@
+/* Full-width inputs */
+input[type=text], input[type=password], input[type=number] {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+/* Set a style for all buttons */
+button, .button {
+    background-color: #4CAF50;
+    color: white;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}
+
+/* Add a hover effect for buttons */
+button:hover, .button:hover {
+    opacity: 0.8;
+}
+
+/* Remove line decoration for links */
+a {
+    text-decoration-line: unset;
+}
+
+/* set select input style */
+select {
+    width: 100%;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+select option {
+    padding: 5px;
+}
+
+select option:checked {
+    font-weight: bold;
+}
+
+.loginByToken {
+    max-width: 400px;
+    float: left;
+}
+
+.loginByCreds {
+    max-width: 400px;
+    float: right;
+}
+
+.orgchart-options {
+    max-width: 400px;
+    float: left;
+}
+
+.error {
+    background-color: #d30303;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+}
+
+.hidden {
+    display: none;
+}

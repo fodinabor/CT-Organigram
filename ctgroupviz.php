@@ -24,13 +24,24 @@ SOFTWARE.
 */
 require_once("cthelper.inc");
 include_once('session_mngmt.inc');
-include_once('config.inc');
 
 $asset_cache_time = date("mdH");
 
 $active_domain = decrypt_pw($_SESSION['user']['server']);
 
-$level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) ? $_POST['level'] : 3));
+function ParameterOrDefault($param_name, $default = ""){
+	if (isset($_GET[$param_name]))
+		return $_GET[$param_name];
+	else if (isset($_POST[$param_name]))
+		return $_POST[$param_name];
+	return $default;
+}
+
+$level = intval(ParameterOrDefault('level', 3));
+
+$group_leader_role_names = ParameterOrDefault('leader-roles', array());
+$group_members_role_names = ParameterOrDefault('ma-roles', array());
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,6 +49,7 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
 	<title>CT Hierachie Visualisierung</title>
 <?php
 	echo '<link rel="stylesheet" href="res/jquery.orgchart.css?' . $asset_cache_time .'">';
+	echo '<link rel="stylesheet" href="res/input.css?' . $asset_cache_time .'">';
 ?>
 <style>
     .orgchart {
@@ -97,8 +109,13 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
 	.orgchart .other .content2 {
         color: #777;
 	}
+	.orgchart .content:empty {
+		display: none;
+	}
+	.orgchart .content2:empty {
+		display: none;
+	}
 </style>
-<!--script type="text/javascript" src="res/jquery.min.js"></script>-->
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -108,20 +125,11 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
 ?>
 </head>
 <body>
-<form id="level_form" class="no-print" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
-	<label for="level">Vertical Level</label>
-	<input type="number" min="0" step="1" name="level" value="<?php echo $level; ?>" required>
-	<input type="hidden" name="csrf" value="<?php echo $_SESSION['csrf']; ?>" required>
-	<button type="submit">Set</button>
-</form>
-<br>
-<a id="print" class="no-print" href="javascript:void(0);" rel="nofollow" onclick="window.print();" title="Print">Print</a>
-<a id="logout" class="no-print" href="<?php echo $_SERVER['PHP_SELF'] . "?csrf=" . $_SESSION['csrf'] . "&logoff=1"; ?>">Logout</a>
 <?php
 
 function exceptionHandler($ex){
 	global $active_domain;
-	echo "An error occured.";
+	echo "An error occured." . $ex;
 	if(isset($active_domain))
 		CT_logout($active_domain);
 }
@@ -153,6 +161,45 @@ function printElement($element, $hierachy){
 	if(!empty($element["name"]))
 		echo "</li>";
 }
+
+$groupRoles = CT_getAllGroupRoles($active_domain);
+$groupRoleNames = array();
+foreach($groupRoles as $groupRole) {
+	array_push($groupRoleNames, $groupRole->name);
+}
+$groupRoleNamesUnique = array_unique($groupRoleNames);
+
+?>
+<div class="orgchart-options no-print">
+<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
+	<label for="level">Vertical Level</label>
+	<input type="number" min="0" step="1" name="level" value="<?php echo $level; ?>" required><br>
+	<label for="leader-roles[]">Group leader roles (un-/select multiple with CRTL / CMD)</label>
+	<select name="leader-roles[]" multiple>
+		<?php
+			foreach ($groupRoleNamesUnique as $groupRole) {
+				$attr = in_array($groupRole, $group_leader_role_names) ? "selected" : "";
+				echo "<option value='$groupRole' $attr>$groupRole</option>";
+			}
+		?>
+	</select><br>
+	<label for="ma-roles[]">Group member roles (un-/select multiple with CRTL / CMD)</label>
+	<select name="ma-roles[]" multiple>
+		<?php
+			foreach ($groupRoleNamesUnique as $groupRole) {
+				$attr = in_array($groupRole, $group_members_role_names) ? "selected" : "";
+				echo "<option value='$groupRole' $attr>$groupRole</option>";
+			}
+		?>
+	</select>
+	<input type="hidden" name="csrf" value="<?php echo $_SESSION['csrf']; ?>" required>
+	<button type="submit">Set</button>
+</form>
+<br>
+<a href="javascript:void(0);" rel="nofollow" onclick="window.print();" title="Print"><div class="button">Print</div></a>
+<a href="<?php echo $_SERVER['PHP_SELF'] . "?csrf=" . $_SESSION['csrf'] . "&logoff=1"; ?>"><div class="button">Logout</div></a>
+</div>
+<?php
 
 $masterData = CT_getCTDbMasterData($active_domain);
 if($masterData->status != "success"){

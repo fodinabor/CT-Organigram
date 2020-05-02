@@ -124,7 +124,7 @@ function CT_sendRequest($domain, $url, $data, $csrf_token_required = true) {
 	return $obj;
 }
 
-function CTNew_getRequest($url, $data)
+function CTNew_getRequest($url, $data = array())
 {
     $options = array(
 		'http'=>array(
@@ -403,4 +403,10 @@ function CT_addTextToSong($domain, $song_id, $filepath) {
 	
 	$ret = CT_sendRequestMultipart($domain, $url, $post_data, $delimiter);
 	return $ret;
+}
+
+function CT_getAllGroupRoles($url) {
+	$domain = getCoreDomain($url);
+	$result = CTNew_getRequest("https://$domain/api/masterdata/person/roles");	
+	return $result->data;
 }
