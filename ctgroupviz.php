@@ -60,6 +60,10 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
 			background-color: #FFF;
 			color: #00020a;
 		}
+
+		.no-print {
+			display: none;
+		}
     }
     .chbox {
         display: inline-flex;
@@ -94,16 +98,6 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
         color: #777;
 	}
 </style>
-<script type="text/javascript">
-(print_window = function () {
-	var printWindow = window.open('', 'Print', 'status=no,toolbar=no,scrollbars=yes,titlebar=no,menubar=no,resizable=yes,width=600,height=600,directories=no,location=no');
-	var doc = $(document.documentElement).clone();
-	doc.find('#print').remove();
-	doc.find('#logout').remove();
-	doc.find('#level_form').remove();
-	printWindow.document.write(doc.html());
-});
-</script>
 <!--script type="text/javascript" src="res/jquery.min.js"></script>-->
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -114,15 +108,15 @@ $level = intval(isset($_GET['level'])? $_GET['level'] : (isset($_POST['level']) 
 ?>
 </head>
 <body>
-<form id="level_form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
+<form id="level_form" class="no-print" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
 	<label for="level">Vertical Level</label>
 	<input type="number" min="0" step="1" name="level" value="<?php echo $level; ?>" required>
 	<input type="hidden" name="csrf" value="<?php echo $_SESSION['csrf']; ?>" required>
 	<button type="submit">Set</button>
 </form>
 <br>
-<a id="print" href="javascript:void(0);" rel="nofollow" onclick="print_window();" title="Print">Print</a>
-<a id="logout" href="<?php echo $_SERVER['PHP_SELF'] . "?csrf=" . $_SESSION['csrf'] . "&logoff=1"; ?>" >Logout</a>
+<a id="print" class="no-print" href="javascript:void(0);" rel="nofollow" onclick="window.print();" title="Print">Print</a>
+<a id="logout" class="no-print" href="<?php echo $_SERVER['PHP_SELF'] . "?csrf=" . $_SESSION['csrf'] . "&logoff=1"; ?>">Logout</a>
 <?php
 
 function exceptionHandler($ex){
