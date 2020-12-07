@@ -157,24 +157,23 @@ $group_members_role_names = ParameterOrDefault('ma-roles', array());
 
   function printElement($element, $hierachy)
   {
-    if (!empty($element["name"])) {
-      echo "<li " .
-        (empty($element["leader"]) ? "" : "data-leader='" . implode("<br>", $element["leader"]) . "' ") .
-        (empty($element["ma"])     ? "" : "data-ma='" . implode("<br>", $element["ma"]) . "'") .
-        ("data-class='" . ($element["status"] === "1" ? "active" : ($element["status"] === "3" ? "inactive" : "other")) . "'") .
-        ">" . $element["name"];
-    }
+    echo "<li " .
+      (empty($element["leader"]) ? "" : "data-leader='" . implode("<br>", $element["leader"]) . "' ") .
+      (empty($element["ma"])     ? "" : "data-ma='" . implode("<br>", $element["ma"]) . "'") .
+      ("data-class='" . ($element["status"] === "1" ? "active" : ($element["status"] === "3" ? "inactive" : "other")) . "'") .
+      ">";
+    if (!empty($element["name"]))
+      echo $element["name"];
+    else
+      echo "hidden";
     if ($element["children"] !== null) {
-      if (!empty($element["name"]))
-        echo "<ul>";
+      echo "<ul>";
       foreach ($element["children"] as $child) {
         printElement($hierachy[$child], $hierachy);
       }
-      if (!empty($element["name"]))
-        echo "</ul>";
+      echo "</ul>";
     }
-    if (!empty($element["name"]))
-      echo "</li>";
+    echo "</li>";
   }
 
   $groupRoles = CT_getAllGroupRoles($active_domain);
