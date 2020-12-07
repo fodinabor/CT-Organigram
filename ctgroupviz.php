@@ -108,6 +108,20 @@ $group_members_role_names = ParameterOrDefault('ma-roles', array());
       color: #777;
     }
 
+    .orgchart .hidden_group .title {
+      background-color: #eee;
+      color: #ccc;
+    }
+
+    .orgchart .hidden_group .content {
+      background-color: #eff5ef;
+      color: #ccc;
+    }
+
+    .orgchart .hidden_group .content2 {
+      color: #ccc;
+    }
+
     .orgchart .other .title {
       background-color: #bbb;
       color: #00039a;
@@ -160,7 +174,7 @@ $group_members_role_names = ParameterOrDefault('ma-roles', array());
     echo "<li " .
       (empty($element["leader"]) ? "" : "data-leader='" . implode("<br>", $element["leader"]) . "' ") .
       (empty($element["ma"])     ? "" : "data-ma='" . implode("<br>", $element["ma"]) . "'") .
-      ("data-class='" . ($element["status"] === "1" ? "active" : ($element["status"] === "3" ? "inactive" : "other")) . "'") .
+      ("data-class='" . (empty($element["name"]) ? "hidden_group" : ($element["status"] === "1" ? "active" : ($element["status"] === "3" ? "inactive" : "other"))) . "'") .
       ">";
     if (!empty($element["name"]))
       echo $element["name"];
