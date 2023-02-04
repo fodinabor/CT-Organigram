@@ -255,17 +255,17 @@ $group_members_role_names = ParameterOrDefault('ma-roles', array());
   $gmss = get_object_vars($masterData->groupMemberstatus);
 
   $groupTypes = array();
-  foreach ($masterData->grouptypes as $id => $data) {
+  foreach ($masterData->groupTypes as $id => $data) {
     $groupTypes[$id] = $data->bezeichnung;
   }
 
   $hierachy = array();
 
   foreach ($groups as $id => $data) {
-    if ($data->versteckt_yn === "0"/* && $data->groupstatus_id === "1"*/) {
-      $hierachy[$id] = array("name" => $data->bezeichnung, "type" => $groupTypes[$data->gruppentyp_id], "leader" => array(), "ma" => array(), "children" => $data->childs, "parents" => $data->parents, "status" => $data->groupstatus_id);
+    if ($data->visibility !== "hidden"/* && $data->groupstatus_id === "1"*/) {
+      $hierachy[$id] = array("name" => $data->bezeichnung, "type" => $groupTypes[$data->gruppentyp_id], "leader" => array(), "ma" => array(), "children" => isset($data->childs) ? $data->childs : array(), "parents" => isset($data->parents) ? $data->parents : null, "status" => $data->groupstatus_id);
     } else {
-      $hierachy[$id] = array("name" => "", "type" => $groupTypes[$data->gruppentyp_id], "leader" => array(), "ma" => array(), "children" => $data->childs, "parents" => $data->parents, "status" => $data->groupstatus_id);
+      $hierachy[$id] = array("name" => "", "type" => $groupTypes[$data->gruppentyp_id], "leader" => array(), "ma" => array(), "children" => isset($data->childs) ? $data->childs : array(), "parents" => isset($data->parents) ? $data->parents : null, "status" => $data->groupstatus_id);
     }
   }
 
