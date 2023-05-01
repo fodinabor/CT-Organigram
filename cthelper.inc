@@ -407,6 +407,6 @@ function CT_addTextToSong($domain, $song_id, $filepath) {
 
 function CT_getAllGroupRoles($url) {
 	$domain = getCoreDomain($url);
-	$result = CTNew_getRequest("https://$domain/api/masterdata/person/roles");	
+	$result = CTNew_getRequest("https://$domain/api/group/roles");	
 	return $result->data;
 }
