@@ -6,3 +6,5 @@ I recommend using id / token login, as this works flawless - also with 2FA enabl
 ## Self hosting
 Just install the files on a webserver supporting `php` and login.
 You can customize the two variables `$group_leader_role_names` and `$group_members_role_names` to better fit your installation's role names.
+
+is this deploying?
