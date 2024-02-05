@@ -161,6 +161,7 @@ function getEncryptionKey() {
 
 function build_login_form(){
 	global $error_message;
+	global $asset_cache_time;
 	?>
 	<!DOCTYPE html>
 	<html lang="en">
